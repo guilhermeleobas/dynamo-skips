@@ -117,7 +117,7 @@ def summary_to_dataframe(summary: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def graph_break_counts(details: dict, top_n: int = 20) -> dict[str, int]:
+def graph_break_counts(details: dict, top_n: int = 20) -> tuple[dict[str, int], int]:
     reasons: list[str] = []
     for tests in details.values():
         for t in tests:
@@ -127,7 +127,9 @@ def graph_break_counts(details: dict, top_n: int = 20) -> dict[str, int]:
             if not r.strip():
                 continue
             reasons.append(_explanation_snippet(r, max_len=200))
-    return dict(Counter(reasons).most_common(top_n))
+    c = Counter(reasons)
+    total = sum(c.values())
+    return dict(c.most_common(top_n)), total
 
 
 st.title("PyTorch Dynamo CPython test results")
@@ -175,7 +177,7 @@ if not summary:
     st.stop()
 
 summary_df = summary_to_dataframe(summary)
-graph_breaks = graph_break_counts(details)
+graph_breaks, graph_breaks_total = graph_break_counts(details)
 
 # Key metrics
 col1, col2, col3, col4 = st.columns(4)
@@ -205,15 +207,24 @@ with tab1:
 
     col1, col2 = st.columns(2)
     with col1:
+        tot = summary_viz["Total"].replace(0, pd.NA)
+        pct_viz = summary_viz.assign(
+            **{
+                "Pass %": (summary_viz["Dynamo pass"] / tot * 100).fillna(0.0),
+                "Skip %": (summary_viz["Dynamo skips"] / tot * 100).fillna(0.0),
+                "Failed %": (summary_viz["Dynamo failed"] / tot * 100).fillna(0.0),
+            }
+        )
         fig = px.bar(
-            summary_viz,
+            pct_viz,
             x="Test",
-            y=["Dynamo pass", "Dynamo skips"],
+            y=["Pass %", "Skip %", "Failed %"],
             barmode="stack",
-            title="Pass vs skip by module",
-            labels={"value": "Count", "variable": "Status"},
+            title="Pass vs skip vs failed (% of module tests)",
+            labels={"value": "% of module tests", "variable": "Status"},
         )
         fig.update_layout(height=500)
+        fig.update_yaxes(range=[0, 100], ticksuffix="%")
         st.plotly_chart(fig, use_container_width=True)
     with col2:
         fig = px.bar(
@@ -233,35 +244,36 @@ with tab1:
 with tab2:
     st.subheader("Top graph break explanations (from skipped tests)")
 
-    if graph_breaks:
+    if graph_breaks and graph_breaks_total > 0:
         gb_df = pd.DataFrame(
             [{"Reason": reason, "Count": count} for reason, count in graph_breaks.items()]
         )
+        gb_df["Percent"] = gb_df["Count"] / graph_breaks_total * 100.0
         col1, col2 = st.columns(2)
         with col1:
             fig = px.bar(
                 gb_df,
-                x="Count",
+                x="Percent",
                 y="Reason",
                 orientation="h",
-                title="Top reasons",
-                labels={"Count": "Number of tests"},
+                title="Top reasons (share of categorized skips)",
+                labels={"Percent": "% of categorized skips"},
             )
             fig.update_layout(height=600)
+            fig.update_xaxes(ticksuffix="%")
             st.plotly_chart(fig, use_container_width=True)
         with col2:
             st.write("### Statistics")
-            total_gb = int(gb_df["Count"].sum())
-            st.metric("Total (top categories)", total_gb)
+            st.metric("Categorized skips (total)", f"{graph_breaks_total:,}")
             top = gb_df.iloc[0]
             st.metric("Top issue (truncated)", str(top["Reason"])[:60])
-            st.metric("Top issue count", int(top["Count"]))
+            st.metric("Top issue share", f"{top['Percent']:.1f}%")
+            st.caption(f"{int(top['Count'])} tests")
             st.write("### Top 5")
             for rank, (_, row) in enumerate(gb_df.head(5).iterrows(), start=1):
-                pct = (row["Count"] / total_gb * 100) if total_gb else 0
                 st.write(f"**{rank}.** {row['Reason'][:90]}")
-                st.progress(pct / 100)
-                st.caption(f"{int(row['Count'])} tests ({pct:.1f}%)")
+                st.progress(row["Percent"] / 100.0)
+                st.caption(f"{row['Percent']:.1f}% · {int(row['Count'])} tests")
     else:
         st.warning("No skipped-test reasons found to summarize.")
 
