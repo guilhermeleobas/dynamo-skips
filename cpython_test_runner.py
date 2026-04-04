@@ -142,14 +142,17 @@ def parse_pytest_output(
         re.MULTILINE
     )
 
-    # Pattern to detect test file markers
-    file_pattern = re.compile(r'=== TEST FILE: test/dynamo/cpython/3_13/test_(\w+)\.py ===')
+    # Pattern to detect test file markers (full stem: test_set, test_bool, ...)
+    file_pattern = re.compile(
+        r"=== TEST FILE: test/dynamo/cpython/3_13/(test_\w+)\.py ==="
+    )
 
     # Pattern to find the status (ok, FAIL, skipped, or ERROR) and optional reason
     status_pattern = re.compile(r'\b(ok|FAIL|skipped|ERROR)\b')
 
     lines = output.split('\n')
     current_module = None
+    current_module_name: Optional[str] = None
 
     # First pass: extract expected test counts from "Ran X tests" lines
     for line in lines:
@@ -158,7 +161,7 @@ def parse_pytest_output(
             current_module_name = file_match.group(1)
 
         ran_match = ran_pattern.search(line)
-        if ran_match and current_module_name:
+        if ran_match and current_module_name is not None:
             expected_counts[current_module_name] = int(ran_match.group(1))
 
     current_module = None
