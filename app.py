@@ -1,4 +1,5 @@
-from collections import Counter
+from collections import Counter, defaultdict
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -19,6 +20,43 @@ def _list_raw_outputs() -> list[Path]:
         return []
     files = list(DATA_DIR.glob(RAW_GLOB))
     return sorted(files, key=lambda p: p.stat().st_mtime, reverse=True)
+
+
+def _parse_run_date_and_commit(path: Path) -> tuple[str, str]:
+    """
+    Return (YYYYMMDD, commit_or_label) from all_tests_output_<commit>_<date>.txt.
+    If the name does not match, use file mtime for the date and the stem as label.
+    """
+    name = path.name
+    prefix = "all_tests_output_"
+    suffix = ".txt"
+    if name.startswith(prefix) and name.endswith(suffix):
+        core = name[len(prefix) : -len(suffix)]
+        i = core.rfind("_")
+        if i != -1:
+            commit_part, date_part = core[:i], core[i + 1 :]
+            if len(date_part) == 8 and date_part.isdigit():
+                return date_part, commit_part or "unknown"
+    m = datetime.fromtimestamp(path.stat().st_mtime)
+    return m.strftime("%Y%m%d"), path.stem
+
+
+def _files_grouped_by_run_date(files: list[Path]) -> dict[str, list[Path]]:
+    by_date: dict[str, list[Path]] = defaultdict(list)
+    for p in files:
+        ymd, _ = _parse_run_date_and_commit(p)
+        by_date[ymd].append(p)
+    for ymd in by_date:
+        by_date[ymd].sort(key=lambda x: x.stat().st_mtime, reverse=True)
+    return dict(by_date)
+
+
+def _format_run_date(yyyymmdd: str) -> str:
+    try:
+        d = datetime.strptime(yyyymmdd, "%Y%m%d").date()
+        return d.strftime("%Y-%m-%d (%A)")
+    except ValueError:
+        return yyyymmdd
 
 
 def _explanation_snippet(reason: str, max_len: int = 120) -> str:
@@ -96,6 +134,7 @@ st.title("PyTorch Dynamo CPython test results")
 st.markdown("Analysis of test skips and graph break reasons")
 
 raw_files = _list_raw_outputs()
+by_run_date = _files_grouped_by_run_date(raw_files) if raw_files else {}
 
 with st.sidebar:
     st.subheader("Data source")
@@ -103,14 +142,25 @@ with st.sidebar:
         st.warning(f"No `{RAW_GLOB}` files in `{DATA_DIR}`. Run the test runner first.")
         selected = None
     else:
-        labels = [p.name for p in raw_files]
-        choice = st.selectbox(
-            "Raw output file",
-            range(len(labels)),
-            format_func=lambda i: labels[i],
+        dates_sorted = sorted(by_run_date.keys(), reverse=True)
+        date_labels = {d: _format_run_date(d) for d in dates_sorted}
+        picked_date = st.selectbox(
+            "Run date",
+            options=dates_sorted,
             index=0,
+            format_func=lambda d: date_labels.get(d, d),
         )
-        selected = raw_files[choice]
+        candidates = by_run_date[picked_date]
+        if len(candidates) == 1:
+            selected = candidates[0]
+        else:
+            selected = st.selectbox(
+                "Run (same calendar day)",
+                options=candidates,
+                format_func=lambda p: (
+                    f"{_parse_run_date_and_commit(p)[1]} — {p.name}"
+                ),
+            )
         st.caption(f"Directory: `{DATA_DIR}`")
 
 if selected is None:
@@ -118,6 +168,7 @@ if selected is None:
     st.stop()
 
 summary, details, source_name = load_parsed_output(str(selected))
+_run_ymd, _run_commit = _parse_run_date_and_commit(selected)
 
 if not summary:
     st.error(f"Could not parse results from `{source_name}`.")
@@ -252,5 +303,10 @@ with tab3:
             st.info("No per-test rows parsed for this module.")
 
 st.divider()
-st.caption(f"Data from: `{source_name}`")
+try:
+    run_day = datetime.strptime(_run_ymd, "%Y%m%d").date()
+    day_s = run_day.isoformat()
+except ValueError:
+    day_s = _run_ymd
+st.caption(f"Run date: **{day_s}** · commit / id: `{_run_commit}` · file: `{source_name}`")
 st.caption("Streamlit · parsed with `cpython_test_runner.parse_pytest_output`")
