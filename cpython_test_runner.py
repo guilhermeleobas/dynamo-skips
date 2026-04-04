@@ -110,7 +110,9 @@ def run_pytest_tests(module_names: Optional[List[str]] = None) -> str:
     return '\n'.join(all_output)
 
 
-def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[str, List[Dict]]]:
+def parse_pytest_output(
+    output: str, *, warn_on_count_mismatch: bool = True
+) -> Tuple[Dict[str, Dict[str, int]], Dict[str, List[Dict]]]:
     """
     Parse unittest output and extract per-module statistics AND detailed test results.
 
@@ -276,7 +278,7 @@ def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[st
         if expected and expected != parsed_total:
             discrepancies.append((module_name, expected, parsed_total))
 
-    if discrepancies:
+    if discrepancies and warn_on_count_mismatch:
         print("\n⚠️  WARNING: Test count mismatch detected!")
         print("=" * 80)
         for module_name, expected, parsed in discrepancies:
