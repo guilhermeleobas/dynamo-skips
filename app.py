@@ -98,6 +98,76 @@ def _normalize_cpython_module_keys(
     }
 
 
+def _totals_from_summary(summary: dict) -> dict:
+    """Aggregate totals from a normalized module summary dict."""
+    total = passed = skipped = failed = 0
+    for s in summary.values():
+        total += s["total"]
+        passed += s["passed"]
+        skipped += s["skipped"]
+        failed += s["failed"]
+    pr = (passed / total * 100) if total else 0.0
+    skip_pct = (skipped / total * 100) if total else 0.0
+    return {
+        "total": total,
+        "passed": passed,
+        "skipped": skipped,
+        "failed": failed,
+        "pass_rate_pct": round(pr, 2),
+        "skip_rate_pct": round(skip_pct, 2),
+    }
+
+
+def _run_display_label(path: Path) -> str:
+    ymd, commit = _parse_run_date_and_commit(path)
+    return f"{_format_run_date(ymd)} · {commit} · {path.name}"
+
+
+def build_multi_run_overview(paths: list[Path]) -> pd.DataFrame:
+    """One row per report file with run-level metrics (newest paths first in input ok)."""
+    rows: list[dict] = []
+    for p in paths:
+        ymd, commit = _parse_run_date_and_commit(p)
+        summary, _, source_name = load_parsed_output(str(p))
+        if not summary:
+            rows.append(
+                {
+                    "YMD": ymd,
+                    "Date": _format_run_date(ymd),
+                    "Commit": commit,
+                    "File": source_name,
+                    "Run": _run_display_label(p),
+                    "Total": None,
+                    "Passed": None,
+                    "Skipped": None,
+                    "Failed": None,
+                    "Pass rate %": None,
+                    "Skip rate %": None,
+                    "Parse OK": False,
+                }
+            )
+            continue
+        summary, _ = _normalize_cpython_module_keys(summary, {})
+        t = _totals_from_summary(summary)
+        rows.append(
+            {
+                "YMD": ymd,
+                "Date": _format_run_date(ymd),
+                "Commit": commit,
+                "File": source_name,
+                "Run": _run_display_label(p),
+                "Total": t["total"],
+                "Passed": t["passed"],
+                "Skipped": t["skipped"],
+                "Failed": t["failed"],
+                "Pass rate %": t["pass_rate_pct"],
+                "Skip rate %": t["skip_rate_pct"],
+                "Parse OK": True,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def summary_to_dataframe(summary: dict) -> pd.DataFrame:
     rows = []
     total = passed = skipped = failed = 0
@@ -240,7 +310,8 @@ with tab1:
             title="Pass vs skip vs failed (% of module tests)",
             labels={"value": "% of module tests", "variable": "Status"},
         )
-        fig.update_layout(height=500)
+        fig.update_layout(height=500, margin=dict(b=160))
+        fig.update_xaxes(tickangle=45)
         fig.update_yaxes(range=[0, 100], ticksuffix="%")
         st.plotly_chart(fig, use_container_width=True)
     with col2:
@@ -252,7 +323,8 @@ with tab1:
             color="% Failures",
             color_continuous_scale="RdYlGn_r",
         )
-        fig.update_layout(height=500)
+        fig.update_layout(height=500, margin=dict(b=160))
+        fig.update_xaxes(tickangle=45)
         st.plotly_chart(fig, use_container_width=True)
 
     st.subheader("Module summary")
