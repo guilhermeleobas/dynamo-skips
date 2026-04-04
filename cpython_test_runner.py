@@ -143,8 +143,8 @@ def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[st
     # Pattern to detect test file markers
     file_pattern = re.compile(r'=== TEST FILE: test/dynamo/cpython/3_13/test_(\w+)\.py ===')
 
-    # Pattern to find the status (ok, FAIL, or skipped) and optional reason
-    status_pattern = re.compile(r'\b(ok|FAIL|skipped)\b')
+    # Pattern to find the status (ok, FAIL, skipped, or ERROR) and optional reason
+    status_pattern = re.compile(r'\b(ok|FAIL|skipped|ERROR)\b')
 
     lines = output.split('\n')
     current_module = None
@@ -208,14 +208,22 @@ def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[st
                         break
 
             if not status_str:
-                # Could not find status, skip this test
-                continue
+                # Check if the rest of the line contains "Exception ignored" (cleanup error)
+                # This means the test ran but had a cleanup exception
+                if 'Exception ignored' in rest_of_line:
+                    status_str = 'ERROR'
+                    reason_raw = rest_of_line.split('Exception ignored')[1].strip()
+                else:
+                    # Could not find status, skip this test
+                    continue
 
             # Map status
             if status_str == 'ok':
                 status = 'PASSED'
             elif status_str == 'FAIL':
                 status = 'FAILED'
+            elif status_str == 'ERROR':
+                status = 'ERROR'
             else:  # skipped
                 status = 'SKIPPED'
 
@@ -225,7 +233,8 @@ def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[st
                     'total': 0,
                     'passed': 0,
                     'failed': 0,
-                    'skipped': 0
+                    'skipped': 0,
+                    'error': 0
                 }
 
             summary[module_name]['total'] += 1
@@ -251,6 +260,8 @@ def parse_pytest_output(output: str) -> Tuple[Dict[str, Dict[str, int]], Dict[st
                     reason = reason_raw
             elif status == 'FAILED':
                 reason = 'Failed in Dynamo compilation'
+            elif status == 'ERROR':
+                reason = reason_raw if reason_raw else 'Test execution error'
 
             details[module_name].append({
                 'test_name': formatted_test_name,
