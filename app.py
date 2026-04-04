@@ -54,7 +54,7 @@ def _files_grouped_by_run_date(files: list[Path]) -> dict[str, list[Path]]:
 def _format_run_date(yyyymmdd: str) -> str:
     try:
         d = datetime.strptime(yyyymmdd, "%Y%m%d").date()
-        return d.strftime("%Y-%m-%d (%A)")
+        return d.isoformat()
     except ValueError:
         return yyyymmdd
 
