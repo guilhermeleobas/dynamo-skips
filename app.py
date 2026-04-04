@@ -367,28 +367,20 @@ if mode == "Individual run":
                 ]
             )
             gb_df["Percent"] = gb_df["Count"] / graph_breaks_total * 100.0
-            col1, col2 = st.columns(2)
-            with col1:
-                fig = px.bar(
-                    gb_df,
-                    x="Percent",
-                    y="Reason",
-                    orientation="h",
-                    title="Top reasons (share of categorized skips)",
-                    labels={"Percent": "% of categorized skips"},
-                )
-                fig.update_layout(height=600)
-                fig.update_xaxes(ticksuffix="%")
-                st.plotly_chart(fig, use_container_width=True)
-            with col2:
-                st.write("### Statistics")
-                st.metric("Categorized skips (total)", f"{graph_breaks_total:,}")
-                top = gb_df.iloc[0]
-                st.metric("Top issue (truncated)", str(top["Reason"])[:60])
-                st.metric("Top issue share", f"{top['Percent']:.1f}%")
-                st.caption(f"{int(top['Count'])} tests")
-                st.write("### All grouped keys")
-                st.dataframe(gb_df, use_container_width=True, height=420)
+            st.metric("Categorized skips (total)", f"{graph_breaks_total:,}")
+            top = gb_df.iloc[0]
+            st.metric("Top issue (truncated)", str(top["Reason"])[:60])
+            st.metric("Top issue share", f"{top['Percent']:.1f}%")
+            st.caption(f"{int(top['Count'])} tests")
+            st.write("### All grouped keys")
+            st.dataframe(
+                gb_df,
+                column_config={
+                    "Percent": st.column_config.NumberColumn(format="%.2f%%")
+                },
+                use_container_width=True,
+                height=420,
+            )
         else:
             st.warning("No skipped-test reasons found to summarize.")
 
