@@ -1,0 +1,130 @@
+
+=== TEST FILE: test/dynamo/cpython/3_13/test_bool.py ===
+
+
+W0404 18:43:06.156000 1086038 /home/guilhermel/git/pytorch313/torch/_native/triton_utils.py:46] triton native DSL ops require: `triton` missing optional dependency `triton` (importlib.util.find_spec(triton) failed)
+W0404 18:43:06.156000 1086038 /home/guilhermel/git/pytorch313/torch/_native/cutedsl_utils.py:50] CuTeDSL operators require optional Python packages `nvidia-cutlass-dsl` and `apache-tvm-ffi`; missing optional dependency `nvidia_cutlass_dsl` (importlib.util.find_spec(nvidia_cutlass_dsl) failed)
+test_blocked (__main__.BoolTest.test_blocked) ... skipped 'class_definition\n  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.\n  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.\n\n  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: A\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 396, in test_blocked\n    class A:\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_bool_called_at_least_once (__main__.BoolTest.test_bool_called_at_least_once) ... ERROR
+test_bool_new (__main__.BoolTest.test_bool_new) ... ok
+test_boolean (__main__.BoolTest.test_boolean) ... ok
+test_callable (__main__.BoolTest.test_callable) ... ok
+test_complex (__main__.BoolTest.test_complex) ... ok
+test_contains (__main__.BoolTest.test_contains) ... ok
+test_convert (__main__.BoolTest.test_convert) ... ok
+test_convert_to_bool (__main__.BoolTest.test_convert_to_bool) ... skipped 'class_definition\n  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.\n  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.\n\n  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: Foo\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 330, in test_convert_to_bool\n    class Foo(object):\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_fileclosed (__main__.BoolTest.test_fileclosed) ... skipped 'Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `open` with argument types [\'str\', \'str\'] (has_kwargs True)\n  Hint: Avoid calling builtin `open` with argument types [\'str\', \'str\']. Consider using an equivalent alternative function/method to `open`.\n  Hint: If you are attempting to call a logging function (e.g. `print`), you can try adding it to `torch._dynamo.config.reorderable_logging_functions`.\n  Hint: Please report an issue to PyTorch.\n\n  Developer debug context: builtin open [<class \'torch._dynamo.variables.constant.ConstantVariable\'>, <class \'torch._dynamo.variables.constant.ConstantVariable\'>] True\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0059.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 277, in test_fileclosed\n    with open(os_helper.TESTFN, "w", encoding="utf-8") as f:\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_float (__main__.BoolTest.test_float) ... ok
+test_format (__main__.BoolTest.test_format) ... ok
+test_from_bytes (__main__.BoolTest.test_from_bytes) ... ok
+test_hasattr (__main__.BoolTest.test_hasattr) ... ok
+test_int (__main__.BoolTest.test_int) ... ok
+test_interpreter_convert_to_bool_raises (__main__.BoolTest.test_interpreter_convert_to_bool_raises) ... ERROR
+test_isinstance (__main__.BoolTest.test_isinstance) ... ok
+test_issubclass (__main__.BoolTest.test_issubclass) ... ok
+test_keyword_args (__main__.BoolTest.test_keyword_args) ... skipped 'Failed to trace unittest method\n  Explanation: Dynamo does not know how to trace unittest method `assertRaisesRegex` \n  Hint: Avoid calling `TestCase.assertRaisesRegex`. Please report an issue to PyTorch.\n\n  Developer debug context: function: unittest.TestCase.assertRaisesRegex\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0060.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 203, in test_keyword_args\n    with self.assertRaisesRegex(TypeError, \'keyword argument\'):\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_marshal (__main__.BoolTest.test_marshal) ... /home/guilhermel/git/pytorch313/torch/_dynamo/variables/functions.py:2290: UserWarning: Dynamo does not know how to trace the builtin `marshal.dumps.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+  torch._dynamo.utils.warn_once(explanation + "\n" + "\n".join(hints))
+skipped 'Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `marshal.dumps.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).\n  Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.\n  Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.\n\n  Developer debug context: module: marshal, qualname: dumps, skip reason: cannot determine source file for marshal (likely a C extension or builtin)\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0007.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 306, in test_marshal\n    self.assertIs(marshal.loads(marshal.dumps(True)), True)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_math (__main__.BoolTest.test_math) ... skipped 'Failed to trace unittest method\n  Explanation: Dynamo does not know how to trace unittest method `assertWarns` \n  Hint: Avoid calling `TestCase.assertWarns`. Please report an issue to PyTorch.\n\n  Developer debug context: function: unittest.TestCase.assertWarns\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0060.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 81, in test_math\n    with self.assertWarns(DeprecationWarning):\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_operator (__main__.BoolTest.test_operator) ... ok
+test_pickle (__main__.BoolTest.test_pickle) ... /home/guilhermel/git/pytorch313/torch/_dynamo/variables/functions.py:2290: UserWarning: Dynamo does not know how to trace the builtin `_pickle.dumps.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).
+If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.
+If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.
+  torch._dynamo.utils.warn_once(explanation + "\n" + "\n".join(hints))
+skipped 'Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `_pickle.dumps.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).\n  Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.\n  Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.\n\n  Developer debug context: module: _pickle, qualname: dumps, skip reason: cannot determine source file for _pickle (likely a C extension or builtin)\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0007.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 312, in test_pickle\n    self.assertIs(pickle.loads(pickle.dumps(True, proto)), True)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_picklevalues (__main__.BoolTest.test_picklevalues) ... skipped 'Attempted to call function marked as skipped\n  Explanation: Dynamo does not know how to trace the builtin `_pickle.dumps.` This function is either a Python builtin (e.g. _warnings.warn) or a third-party C/C++ Python extension (perhaps created with pybind).\n  Hint: If it is a Python builtin, please file an issue on GitHub so the PyTorch team can add support for it and see the next case for a workaround.\n  Hint: If it is a third-party C/C++ Python extension, please either wrap it into a PyTorch-understood custom operator (see https://pytorch.org/tutorials/advanced/custom_ops_landing_page.html for more details) or, if it is traceable, use `torch.compiler.allow_in_graph`.\n\n  Developer debug context: module: _pickle, qualname: dumps, skip reason: cannot determine source file for _pickle (likely a C extension or builtin)\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0007.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 318, in test_picklevalues\n    self.assertEqual(pickle.dumps(True, protocol=0), b"I01\\n.")\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_real_and_imag (__main__.BoolTest.test_real_and_imag) ... ok
+test_repr (__main__.BoolTest.test_repr) ... skipped 'Failed to trace builtin operator\n  Explanation: Dynamo does not know how to trace builtin operator `eval` with argument types [\'str\'] (has_kwargs False)\n  Hint: Avoid calling builtin `eval` with argument types [\'str\']. Consider using an equivalent alternative function/method to `eval`.\n  Hint: If you are attempting to call a logging function (e.g. `print`), you can try adding it to `torch._dynamo.config.reorderable_logging_functions`.\n  Hint: Please report an issue to PyTorch.\n\n  Developer debug context: builtin eval [<class \'torch._dynamo.variables.constant.ConstantVariable\'>] False\n\n For more details about this graph break, please visit: https://meta-pytorch.github.io/compile-graph-break-site/gb/gb0059.html\n\nfrom user code:\n   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 44, in test_repr\n    self.assertIs(eval(repr(False)), False)\n\nSet TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you\'re reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"\n'
+test_sane_len (__main__.BoolTest.test_sane_len) ... ERROR
+test_str (__main__.BoolTest.test_str) ... ok
+test_string (__main__.BoolTest.test_string) ... ok
+test_subclass (__main__.BoolTest.test_subclass) ... ERROR
+test_types (__main__.BoolTest.test_types) ... ok
+
+======================================================================
+ERROR: test_bool_called_at_least_once (__main__.BoolTest.test_bool_called_at_least_once)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/guilhermel/git/pytorch313/torch/_dynamo/eval_frame.py", line 1046, in compile_wrapper
+    raise e.with_traceback(None) from e.__cause__  # User compiler error
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._dynamo.exc.Unsupported: class_definition
+  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.
+  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+
+  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: X
+
+from user code:
+   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 417, in test_bool_called_at_least_once
+    class X:
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+
+======================================================================
+ERROR: test_interpreter_convert_to_bool_raises (__main__.BoolTest.test_interpreter_convert_to_bool_raises)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/guilhermel/git/pytorch313/torch/_dynamo/eval_frame.py", line 1046, in compile_wrapper
+    raise e.with_traceback(None) from e.__cause__  # User compiler error
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._dynamo.exc.Unsupported: class_definition
+  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.
+  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+
+  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: SymbolicBool
+
+from user code:
+   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 357, in test_interpreter_convert_to_bool_raises
+    class SymbolicBool:
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+
+======================================================================
+ERROR: test_sane_len (__main__.BoolTest.test_sane_len)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/guilhermel/git/pytorch313/torch/_dynamo/eval_frame.py", line 1046, in compile_wrapper
+    raise e.with_traceback(None) from e.__cause__  # User compiler error
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._dynamo.exc.Unsupported: class_definition
+  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.
+  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+
+  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: A
+
+from user code:
+   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 384, in test_sane_len
+    class A:
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+
+======================================================================
+ERROR: test_subclass (__main__.BoolTest.test_subclass)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/guilhermel/git/pytorch313/torch/_dynamo/eval_frame.py", line 1046, in compile_wrapper
+    raise e.with_traceback(None) from e.__cause__  # User compiler error
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+torch._dynamo.exc.Unsupported: class_definition
+  Explanation: Class creation requires executing the class body function and capturing its namespace, which is not yet traceable in Dynamo.
+  Hint: It may be possible to write Dynamo tracing rules for this code. Please report an issue to PyTorch if you encounter this graph break often and it is causing performance issues.
+
+  Developer debug context: Class definitions are not yet fully supported in torch.compile(). Class: C
+
+from user code:
+   File "/home/guilhermel/git/pytorch313/test/dynamo/cpython/3_13/test_bool.py", line 32, in test_subclass
+    class C(bool):
+
+Set TORCHDYNAMO_VERBOSE=1 for the internal stack trace (please do this especially if you're reporting a bug to PyTorch). For even more developer context, set TORCH_LOGS="+dynamo"
+
+
+----------------------------------------------------------------------
+Ran 31 tests in 1.009s
+
+FAILED (errors=4, skipped=9)
