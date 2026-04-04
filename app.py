@@ -82,6 +82,22 @@ def load_parsed_output(path_str: str):
     return summary, details, path.name
 
 
+def _normalize_cpython_module_keys(
+    summary: dict, details: dict
+) -> tuple[dict, dict]:
+    """
+    Use full CPython test file stems (test_set) everywhere so tables and Plotly
+    hovers do not show shortened names (set).
+    """
+
+    def norm(name: str) -> str:
+        return name if name.startswith("test_") else f"test_{name}"
+
+    return {norm(k): v for k, v in summary.items()}, {
+        norm(k): v for k, v in details.items()
+    }
+
+
 def summary_to_dataframe(summary: dict) -> pd.DataFrame:
     rows = []
     total = passed = skipped = failed = 0
@@ -176,6 +192,7 @@ if not summary:
     st.error(f"Could not parse results from `{source_name}`.")
     st.stop()
 
+summary, details = _normalize_cpython_module_keys(summary, details)
 summary_df = summary_to_dataframe(summary)
 graph_breaks, graph_breaks_total = graph_break_counts(details)
 
