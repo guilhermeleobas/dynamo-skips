@@ -72,6 +72,18 @@ def _explanation_snippet(reason: str, max_len: int = 120) -> str:
     return (compact[:max_len] + "…") if len(compact) > max_len else compact
 
 
+def _graph_break_key(reason: str) -> str:
+    """Use the first reason line as the graph-break key (e.g. Unsupported function call)."""
+    if not reason:
+        return "Unknown"
+    text = reason.replace("\\n", "\n").strip()
+    if not text:
+        return "Unknown"
+
+    first_line = text.split("\n", 1)[0].strip().strip("'\"")
+    return first_line or "Unknown"
+
+
 @st.cache_data
 def load_parsed_output(path_str: str):
     path = Path(path_str)
@@ -203,7 +215,7 @@ def summary_to_dataframe(summary: dict) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def graph_break_counts(details: dict, top_n: int = 20) -> tuple[dict[str, int], int]:
+def graph_break_counts(details: dict) -> tuple[dict[str, int], int]:
     reasons: list[str] = []
     for tests in details.values():
         for t in tests:
@@ -212,10 +224,10 @@ def graph_break_counts(details: dict, top_n: int = 20) -> tuple[dict[str, int], 
             r = t.get("reason") or ""
             if not r.strip():
                 continue
-            reasons.append(_explanation_snippet(r, max_len=200))
+            reasons.append(_graph_break_key(r))
     c = Counter(reasons)
     total = sum(c.values())
-    return dict(c.most_common(top_n)), total
+    return dict(c.most_common()), total
 
 
 st.title("PyTorch Dynamo CPython test results")
@@ -345,7 +357,7 @@ if mode == "Individual run":
         st.dataframe(summary_df, use_container_width=True)
 
     with tab2:
-        st.subheader("Top graph break explanations (from skipped tests)")
+        st.subheader("All graph break keys (from skipped tests)")
 
         if graph_breaks and graph_breaks_total > 0:
             gb_df = pd.DataFrame(
@@ -375,11 +387,8 @@ if mode == "Individual run":
                 st.metric("Top issue (truncated)", str(top["Reason"])[:60])
                 st.metric("Top issue share", f"{top['Percent']:.1f}%")
                 st.caption(f"{int(top['Count'])} tests")
-                st.write("### Top 5")
-                for rank, (_, row) in enumerate(gb_df.head(5).iterrows(), start=1):
-                    st.write(f"**{rank}.** {row['Reason'][:90]}")
-                    st.progress(row["Percent"] / 100.0)
-                    st.caption(f"{row['Percent']:.1f}% · {int(row['Count'])} tests")
+                st.write("### All grouped keys")
+                st.dataframe(gb_df, use_container_width=True, height=420)
         else:
             st.warning("No skipped-test reasons found to summarize.")
 
