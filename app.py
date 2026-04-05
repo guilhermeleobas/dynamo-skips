@@ -387,41 +387,61 @@ if mode == "Individual run":
     with tab3:
         st.subheader("Detailed module results")
         modules = sorted(summary.keys())
-        selected_module = st.selectbox("Module", modules)
+        selected_module = st.selectbox(
+            "Module",
+            options=[None, *modules],
+            index=0,
+            format_func=lambda m: "All modules" if m is None else m,
+            placeholder="Search module",
+        )
 
-        if selected_module:
+        if selected_module is None:
+            s = {
+                "total": total_tests,
+                "passed": passing,
+                "skipped": skipped,
+                "failed": int(total_row["Dynamo failed"]),
+            }
+            mod_tests = []
+            for module_name in modules:
+                for test in details.get(module_name, []):
+                    row = dict(test)
+                    row["module"] = module_name
+                    mod_tests.append(row)
+        else:
             s = summary[selected_module]
-            c1, c2, c3, c4 = st.columns(4)
-            with c1:
-                st.metric("Total", s["total"])
-            with c2:
-                st.metric("Passed", s["passed"])
-            with c3:
-                st.metric("Skipped", s["skipped"])
-            with c4:
-                st.metric("Failed", s["failed"])
-
             mod_tests = details.get(selected_module, [])
-            if mod_tests:
-                detail_df = pd.DataFrame(mod_tests)
-                filter_status = st.multiselect(
-                    "Filter by status",
-                    options=["PASSED", "SKIPPED", "FAILED"],
-                    default=["SKIPPED", "FAILED"],
+
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.metric("Total", s["total"])
+        with c2:
+            st.metric("Passed", s["passed"])
+        with c3:
+            st.metric("Skipped", s["skipped"])
+        with c4:
+            st.metric("Failed", s["failed"])
+
+        if mod_tests:
+            detail_df = pd.DataFrame(mod_tests)
+            filter_status = st.multiselect(
+                "Filter by status",
+                options=["PASSED", "SKIPPED", "FAILED"],
+                default=["PASSED", "SKIPPED", "FAILED"],
+            )
+            if filter_status:
+                detail_df = detail_df[detail_df["status"].isin(filter_status)]
+            q = st.text_input("Search test name or reason", "")
+            if q.strip():
+                mask = detail_df["test_name"].str.contains(
+                    q, case=False, regex=False, na=False
+                ) | detail_df["reason"].str.contains(
+                    q, case=False, regex=False, na=False
                 )
-                if filter_status:
-                    detail_df = detail_df[detail_df["status"].isin(filter_status)]
-                q = st.text_input("Search test name or reason", "")
-                if q.strip():
-                    mask = detail_df["test_name"].str.contains(
-                        q, case=False, regex=False, na=False
-                    ) | detail_df["reason"].str.contains(
-                        q, case=False, regex=False, na=False
-                    )
-                    detail_df = detail_df[mask]
-                st.dataframe(detail_df, use_container_width=True, height=480)
-            else:
-                st.info("No per-test rows parsed for this module.")
+                detail_df = detail_df[mask]
+            st.dataframe(detail_df, use_container_width=True, height=480)
+        else:
+            st.info("No per-test rows parsed for this module.")
 
 else:
     st.subheader("Summary across all saved test runs")
