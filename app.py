@@ -339,7 +339,7 @@ if mode == "Individual run":
             fig.update_layout(height=500, margin=dict(b=160))
             fig.update_xaxes(tickangle=45)
             fig.update_yaxes(range=[0, 100], ticksuffix="%")
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
         with col2:
             fig = px.bar(
                 summary_viz,
@@ -351,10 +351,10 @@ if mode == "Individual run":
             )
             fig.update_layout(height=500, margin=dict(b=160))
             fig.update_xaxes(tickangle=45)
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
 
         st.subheader("Module summary")
-        st.dataframe(summary_df, use_container_width=True)
+        st.dataframe(summary_df, width="stretch")
 
     with tab2:
         st.subheader("All graph break keys (from skipped tests)")
@@ -378,7 +378,7 @@ if mode == "Individual run":
                 column_config={
                     "Percent": st.column_config.NumberColumn(format="%.2f%%")
                 },
-                use_container_width=True,
+                width="stretch",
                 height=420,
             )
         else:
@@ -439,7 +439,7 @@ if mode == "Individual run":
                     q, case=False, regex=False, na=False
                 )
                 detail_df = detail_df[mask]
-            st.dataframe(detail_df, use_container_width=True, height=480)
+            st.dataframe(detail_df, width="stretch", height=480)
         else:
             st.info("No per-test rows parsed for this module.")
 
@@ -489,7 +489,7 @@ else:
                 fig.update_layout(height=420, margin=dict(b=120))
                 fig.update_xaxes(tickangle=45)
                 fig.update_yaxes(range=[0, 100], ticksuffix="%")
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
             with trend_col2:
                 status_cols = ["Passed", "Skipped", "Failed"]
@@ -509,7 +509,7 @@ else:
                 )
                 fig.update_layout(height=420, margin=dict(b=120))
                 fig.update_xaxes(tickangle=45)
-                st.plotly_chart(fig, use_container_width=True)
+                st.plotly_chart(fig, width="stretch")
 
         st.subheader("Run table")
         shown = all_runs_df.sort_values(["YMD", "Commit"], ascending=[False, False])
@@ -528,7 +528,7 @@ else:
                     "File",
                 ]
             ],
-            use_container_width=True,
+            width="stretch",
             height=420,
         )
 
