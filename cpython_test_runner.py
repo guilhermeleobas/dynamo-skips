@@ -23,6 +23,7 @@ from datetime import datetime
 
 TEST_DIR = Path("~/git/pytorch313/test/dynamo/cpython/3_13").expanduser()
 PYTORCH_ROOT = Path("~/git/pytorch313").expanduser()
+WORKSPACE_NAME = "pytorch"
 ENV_NAME = "pytorch313"
 
 
@@ -86,7 +87,7 @@ def run_pytest_tests(module_names: Optional[List[str]] = None) -> str:
     # Run each test file separately
     for test_file in test_files:
         cmd = [
-            "micromamba", "run", "-n", ENV_NAME,
+            "pixi", "run", "-w", WORKSPACE_NAME, "-e", ENV_NAME,
             "python", test_file,
             "-v"
         ]
