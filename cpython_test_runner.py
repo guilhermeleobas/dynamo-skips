@@ -148,8 +148,12 @@ def parse_pytest_output(
         r"=== TEST FILE: test/dynamo/cpython/3_13/(test_\w+)\.py ==="
     )
 
-    # Pattern to find the status (ok, FAIL, skipped, or ERROR) and optional reason
-    status_pattern = re.compile(r'\b(ok|FAIL|skipped|ERROR)\b')
+    # Pattern to find the status and optional reason.
+    # Order matters for alternation: longer phrases first so "expected failure"
+    # is not partially matched as just "FAIL"-less text.
+    status_pattern = re.compile(
+        r'\b(expected failure|unexpected success|ok|FAIL|skipped|ERROR)\b'
+    )
 
     lines = output.split('\n')
     current_module = None
@@ -202,14 +206,16 @@ def parse_pytest_output(
                 # Get the reason if it's on the same line
                 reason_raw = rest_of_line[status_match.end():].strip()
             else:
-                # Status might be on the next lines (if there are warnings)
-                # Look in the next few lines
-                for j in range(i + 1, min(i + 20, len(lines))):
+                # Status might be on the next lines (warnings/error logs in between).
+                # Scan forward until we hit the status, the next test ID, or EOF.
+                for j in range(i + 1, len(lines)):
                     next_line = lines[j]
+                    # Stop if a new test starts before we found the status
+                    if test_start_pattern.search(next_line):
+                        break
                     status_match = status_pattern.search(next_line)
                     if status_match:
                         status_str = status_match.group(1)
-                        # Get the reason if it's on this line
                         reason_raw = next_line[status_match.end():].strip()
                         break
 
@@ -230,6 +236,11 @@ def parse_pytest_output(
                 status = 'FAILED'
             elif status_str == 'ERROR':
                 status = 'ERROR'
+            elif status_str == 'expected failure':
+                # Treat known-broken tests as SKIPPED for dashboard purposes.
+                status = 'SKIPPED'
+            elif status_str == 'unexpected success':
+                status = 'FAILED'
             else:  # skipped
                 status = 'SKIPPED'
 
@@ -255,12 +266,11 @@ def parse_pytest_output(
             if status == 'PASSED':
                 reason = ''
             elif status == 'SKIPPED':
-                # Extract reason from between quotes: skipped 'reason'
-                if reason_raw.startswith("'"):
-                    # Find the closing quote (being careful about escaped quotes)
-                    # The reason is everything between the first and last single quote
+                if status_str == 'expected failure':
+                    reason = 'Expected failure'
+                elif reason_raw.startswith("'"):
+                    # Extract reason from between quotes: skipped 'reason'
                     reason = reason_raw[1:-1] if reason_raw.endswith("'") else reason_raw[1:]
-                    # Unescape the newlines
                     reason = reason.replace('\\n', '\n')
                 else:
                     reason = reason_raw
