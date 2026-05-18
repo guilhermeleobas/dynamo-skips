@@ -21,7 +21,7 @@ from datetime import datetime
 
 
 
-TEST_DIR = Path("~/git/pytorch313/test/dynamo/cpython/3_13").expanduser()
+TEST_DIR = Path("~/git/pytorch313/test/cpython/v3_13").expanduser()
 PYTORCH_ROOT = Path("~/git/pytorch313").expanduser()
 WORKSPACE_NAME = "pytorch"
 ENV_NAME = "pytorch313"
@@ -63,12 +63,12 @@ def run_pytest_tests(module_names: Optional[List[str]] = None) -> str:
         combined test output as string
     """
     if module_names:
-        test_files = [f"test/dynamo/cpython/3_13/{name}.py" for name in module_names]
+        test_files = [f"test/cpython/v3_13/{name}.py" for name in module_names]
     else:
         # Get all test files in the cpython directory
-        cpython_dir = os.path.join(PYTORCH_ROOT, 'test/dynamo/cpython/3_13')
+        cpython_dir = os.path.join(PYTORCH_ROOT, 'test//cpython/v3_13')
         test_files = sorted([
-            f"test/dynamo/cpython/3_13/{f}"
+            f"test/cpython/v3_13/{f}"
             for f in os.listdir(cpython_dir)
             if f.startswith('test_') and f.endswith('.py')
         ])
@@ -145,7 +145,7 @@ def parse_pytest_output(
 
     # Pattern to detect test file markers (full stem: test_set, test_bool, ...)
     file_pattern = re.compile(
-        r"=== TEST FILE: test/dynamo/cpython/3_13/(test_\w+)\.py ==="
+        r"=== TEST FILE: test/cpython/v3_13/(test_\w+)\.py ==="
     )
 
     # Pattern to find the status and optional reason.
