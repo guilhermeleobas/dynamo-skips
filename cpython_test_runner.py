@@ -144,8 +144,10 @@ def parse_pytest_output(
     )
 
     # Pattern to detect test file markers (full stem: test_set, test_bool, ...)
+    # Canonical layout: test/cpython/v3_13/. Also accepts legacy
+    # test/dynamo/cpython/3_13/ for older data files in data/.
     file_pattern = re.compile(
-        r"=== TEST FILE: test/cpython/v3_13/(test_\w+)\.py ==="
+        r"=== TEST FILE: test/(?:cpython/v3_13|dynamo/cpython/3_13)/(test_\w+)\.py ==="
     )
 
     # Pattern to find the status and optional reason.
