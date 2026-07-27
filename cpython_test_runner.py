@@ -22,9 +22,9 @@ from datetime import datetime
 
 
 TEST_DIR = Path("~/git/pytorch313/test/cpython/v3_13").expanduser()
-PYTORCH_ROOT = Path("~/git/pytorch313").expanduser()
+PYTORCH_ROOT = Path("~/git/pytorch313-cp").expanduser()
 WORKSPACE_NAME = "pytorch"
-ENV_NAME = "pytorch313"
+ENV_NAME = "pytorch313-cp"
 
 
 def get_commit_hash(repo_path: str) -> str:
