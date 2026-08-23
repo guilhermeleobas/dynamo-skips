@@ -14,6 +14,7 @@ Usage:
 import subprocess
 import re
 import os
+import sys
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional
 import argparse
@@ -21,10 +22,13 @@ from datetime import datetime
 
 
 
-TEST_DIR = Path("~/git/pytorch313/test/cpython/v3_13").expanduser()
-PYTORCH_ROOT = Path("~/git/pytorch313-cp").expanduser()
-WORKSPACE_NAME = "pytorch"
-ENV_NAME = "pytorch313-cp"
+# The pytorch checkout to test. Everything else -- interpreter, torch, build
+# deps -- is expected to be resolved already by whoever invokes this, so the
+# tests just re-use the interpreter running this script.
+PYTORCH_ROOT = Path(os.environ.get("PYTORCH_ROOT", "~/git/pytorch-viable")).expanduser()
+
+# Outputs live next to this script, not in the caller's working directory.
+DATA_DIR = Path(__file__).resolve().parent / "data"
 
 
 def get_commit_hash(repo_path: str) -> str:
@@ -86,11 +90,7 @@ def run_pytest_tests(module_names: Optional[List[str]] = None) -> str:
 
     # Run each test file separately
     for test_file in test_files:
-        cmd = [
-            "pixi", "run", "-w", WORKSPACE_NAME, "-e", ENV_NAME,
-            "python", test_file,
-            "-v"
-        ]
+        cmd = [sys.executable, test_file, "-v"]
 
         print(f"  Running {test_file}...")
 
@@ -364,7 +364,7 @@ def main():
     args = parser.parse_args()
 
     # Ensure data directory exists
-    data_dir = Path("data")
+    data_dir = DATA_DIR
     data_dir.mkdir(exist_ok=True)
 
     # Get commit hash and date for filename generation
