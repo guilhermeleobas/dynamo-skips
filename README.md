@@ -4,7 +4,7 @@ Dashboard for analyzing PyTorch Dynamo CPython test results and graph break reas
 
 ## Overview
 
-This Streamlit application provides interactive visualization of:
+This [Streamlit](https://streamlit.io) application provides interactive visualization of:
 - CPython test results across 38 modules (4,352+ tests)
 - Graph break reasons and failure analysis
 - Pass/skip rates by module
