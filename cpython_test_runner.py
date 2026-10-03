@@ -29,6 +29,9 @@ PYTORCH_ROOT = Path(os.environ.get("PYTORCH_ROOT", "~/git/pytorch-viable")).expa
 
 # Outputs live next to this script, not in the caller's working directory.
 DATA_DIR = Path(__file__).resolve().parent / "data"
+# Where the CPython tests live inside PYTORCH_ROOT. Before 2026-05-12 (backfill runs)
+# they were under test/dynamo/cpython/3_13.
+TEST_SUBDIR = os.environ.get("CPYTHON_TEST_SUBDIR", "test/cpython/v3_13")
 
 
 def get_commit_hash(repo_path: str) -> str:
@@ -67,12 +70,12 @@ def run_pytest_tests(module_names: Optional[List[str]] = None) -> str:
         combined test output as string
     """
     if module_names:
-        test_files = [f"test/cpython/v3_13/{name}.py" for name in module_names]
+        test_files = [f"{TEST_SUBDIR}/{name}.py" for name in module_names]
     else:
         # Get all test files in the cpython directory
-        cpython_dir = os.path.join(PYTORCH_ROOT, 'test//cpython/v3_13')
+        cpython_dir = os.path.join(PYTORCH_ROOT, TEST_SUBDIR)
         test_files = sorted([
-            f"test/cpython/v3_13/{f}"
+            f"{TEST_SUBDIR}/{f}"
             for f in os.listdir(cpython_dir)
             if f.startswith('test_') and f.endswith('.py')
         ])
