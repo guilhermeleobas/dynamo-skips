@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This project provides a Streamlit dashboard for analyzing PyTorch Dynamo CPython test results from raw unittest output files.
+This project provides a static dashboard (GitHub Pages) for analyzing PyTorch Dynamo CPython test results from raw unittest output files.
 
 Primary goals:
 - Track pass/skip/fail behavior per module.
@@ -11,11 +11,11 @@ Primary goals:
 
 ## Current Status
 
-The dashboard is implemented in `app.py` and supports both single-run and multi-run analysis.
+`build_site.py` pre-parses every log into JSON; the page in `web/` (Bootstrap + DataTables + Plotly.js) renders it client-side. Supports both single-run and multi-run analysis.
 
 Implemented:
 - Parsing raw outputs from `data/all_tests_output_<commit>_<date>.txt`.
-- Sidebar mode selector:
+- View selector:
   - `Individual run`
   - `All runs summary`
 - Individual run views:
@@ -33,8 +33,8 @@ Implemented:
 ```text
 cpython_test_runner.py
   -> raw output files in data/
-  -> app.py reads + parses with parse_pytest_output
-  -> Streamlit dashboard visualizes per-run + cross-run metrics
+  -> build_site.py parses with parse_pytest_output into site/data/*.json
+  -> GitHub Actions deploys site/ to GitHub Pages on push to main
 ```
 
 ## Graph Break Key Logic
@@ -50,21 +50,18 @@ This produces stable grouped categories even when the rest of the message contai
 ## Run Locally
 
 ```bash
-pixi install
-pixi run streamlit run app.py
+pixi run serve   # builds site/ and serves it on http://localhost:8000
 ```
 
 ## Known Gaps / Next Improvements
 
-- Tighten static typing in `app.py` (several editor type warnings are currently tolerated).
 - Add tests for parser edge cases and graph-break key extraction.
 - Add optional export of graph-break and module tables.
-- Improve deploy docs with a pinned `requirements.txt` or container path.
 
 ## Deployment Options
 
-- Streamlit Cloud (fastest path).
-- Self-hosted Streamlit behind a reverse proxy (Nginx/Caddy) for TLS.
+- GitHub Pages via `.github/workflows/pages.yml` (Settings → Pages → Source: GitHub Actions).
+- Any static host: serve the output of `python build_site.py`.
 
 ## Reference
 
