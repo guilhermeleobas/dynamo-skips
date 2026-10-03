@@ -7,8 +7,8 @@ PYTORCH_REPO=~/git/pytorch313
 WORKTREE=~/git/pytorch-viable
 
 # Reuse an existing env from the pytorch workspace rather than declaring a new
-# one. Note the editable install below repoints this env's torch at $WORKTREE,
-# which is deleted at the end of the run.
+# one. The build below layers a worktree-local venv on top so it never touches
+# this env's own torch install.
 PIXI_WORKSPACE=pytorch
 PIXI_ENV=pytorch313
 
@@ -48,17 +48,28 @@ git -C "$WORKTREE" submodule update --init --recursive
 # whatever environment it is launched in, so it needs nothing else from us.
 export PYTORCH_ROOT="$WORKTREE"
 
-(cd "$WORKTREE" && pixi run -w "$PIXI_WORKSPACE" -e "$PIXI_ENV" build)
-
 # Captured before teardown. Width matches the hash cpython_test_runner.py
 # puts in the data filename.
 msg=$(git -C "$WORKTREE" rev-parse --short=11 HEAD)
 
-cd "$APP"
+# Build and test in a venv layered on the pixi env, not in the env itself. The
+# env has a single shared editable-torch finder (_editable_skbc_torch.pth); a
+# plain `pip install -e .` here would repoint it at $WORKTREE, and cleanup()
+# would then leave $PYTORCH_REPO unable to `import torch` until it is rebuilt.
+# The venv's site-packages precedes the env on sys.path, so the finder this
+# build writes is scoped to the worktree and is deleted along with it.
+pixi run -w "$PIXI_WORKSPACE" -e "$PIXI_ENV" bash -c "
+set -e
+cd '$WORKTREE'
+python -m venv --system-site-packages .venv
+source .venv/bin/activate
+export CCACHE_BASEDIR=\"\$HOME\"
+pip install -e . -v --no-build-isolation
+cd '$APP'
+python '$APP/cpython_test_runner.py'
+"
 
-# Run the tests in the same env that was just built, so `python` there is the
-# one with the worktree's torch installed.
-pixi run -w "$PIXI_WORKSPACE" -e "$PIXI_ENV" python "$APP/cpython_test_runner.py"
+cd "$APP"
 
 # Results only. Staging everything would sweep up in-progress edits to this
 # script and push them silently.
