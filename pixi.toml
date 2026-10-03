@@ -8,9 +8,8 @@ version = "0.1.0"
 [tasks]
 test-runner = "python cpython_test_runner.py"
 test-runner-reuse = "python cpython_test_runner.py --reuse-output data/all_tests_output_*.txt"
+build-site = "python build_site.py"
+serve = { cmd = "python -m http.server 8000 --directory site", depends-on = ["build-site"] }
 
 [dependencies]
 python = ">=3.14.3,<3.15"
-streamlit = ">=1.55.0,<2"
-pandas = ">=2.3.3,<3"
-plotly = ">=6.0.0,<7"

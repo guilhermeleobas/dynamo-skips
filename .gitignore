@@ -38,9 +38,8 @@ env/
 *~
 .DS_Store
 
-# Streamlit
-.streamlit/
-*.streamlit.cache/
+# Built site
+site/
 
 # Testing
 .pytest_cache/
