@@ -94,7 +94,7 @@ code { color: var(--bs-secondary-color); font-size: 0.8em; }
 .table { --bs-table-bg: transparent; font-size: 0.875rem; }
 .table > thead th { color: var(--bs-secondary-color); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; }
 table.clickable tbody tr { cursor: pointer; }
-td.reason { max-width: 60rem; }
+td.reason { max-width: none; }
 td.reason pre { white-space: pre-wrap; word-break: break-word; font-size: 0.75rem; margin: 0.5rem 0 0; padding: 0.6rem 0.75rem; border-radius: 0.5rem; background: var(--bs-tertiary-bg); }
 td.reason summary { cursor: pointer; }
 td.reason summary::marker { color: var(--bs-secondary-color); }

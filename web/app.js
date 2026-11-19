@@ -289,6 +289,30 @@ function renderBreaks(run) {
 }
 
 // ---------- Individual run: Module details ----------
+// Mirrors cpython_test_runner.py: each file runs from the pytorch root with Dynamo on.
+const TEST_SUBDIR = "test/cpython/v3_13";
+const runCommand = (module, test) => `PYTORCH_TEST_WITH_DYNAMO=1 python ${TEST_SUBDIR}/${module}.py -v ${test}`;
+
+function testCell(name, type, row) {
+  if (type !== "display") return name;
+  const cmd = runCommand(row[0], name);
+  return `<span class="font-monospace small">${esc(name)}</span>
+    <button type="button" class="btn btn-link btn-sm p-0 ms-1 copy-cmd" data-cmd="${esc(cmd)}" title="Copy: ${esc(cmd)}"><i class="bi bi-copy"></i></button>`;
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Clipboard API needs a secure context; fall back to a hidden textarea.
+    const ta = Object.assign(document.createElement("textarea"), { value: text });
+    document.body.append(ta);
+    ta.select();
+    document.execCommand("copy");
+    ta.remove();
+  }
+}
+
 function reasonCell(reason, type) {
   if (type !== "display") return reason;
   const text = reason.replace(/\\n/g, "\n").trim();
@@ -331,7 +355,7 @@ async function renderDetails(run) {
   const dt = dataTable("detail-table", rows, {
     columns: [
       { title: "Module" },
-      { title: "Test", render: (d, type) => (type === "display" ? `<span class="font-monospace small">${esc(d)}</span>` : d) },
+      { title: "Test", render: testCell },
       { title: "Status", render: (d, type) => (type === "display" ? chip(d[0]) : d) },
       { title: "Reason", className: "reason", orderable: false, render: reasonCell, width: "50%" },
     ],
@@ -542,6 +566,14 @@ async function init() {
     renderTab();
   });
   $("#status-filter").addEventListener("change", applyDetailFilters);
+  $("#detail-table").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".copy-cmd");
+    if (!btn) return;
+    await copyText(btn.dataset.cmd);
+    const icon = btn.querySelector("i");
+    icon.className = "bi bi-check2";
+    setTimeout(() => (icon.className = "bi bi-copy"), 1200);
+  });
   // Re-theme charts when the OS color scheme flips (index.html updates data-bs-theme first).
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", render);
 
